@@ -1,0 +1,22 @@
+Import( 'project' )
+Import( 'libs' )
+
+libraries = [
+              libs.judy,
+              libs.judymatch,
+              libs.boost_program_options,
+            ]
+
+name = project.getName()
+sourcesDir = '.'
+sources = project.scanFiles( [sourcesDir] )
+
+env = project.createEnv( libraries )
+env.Append( CPPPATH=sourcesDir )
+example1 = env.Program( target=name, source=sources )
+
+install = env.Install( project.inOutputBin(), example1 )
+env.Alias(name, install )
+env.Alias('all', install )
+
+
