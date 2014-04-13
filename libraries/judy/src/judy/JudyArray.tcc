@@ -14,7 +14,7 @@ JudyArray<Key, T, Compare, Allocator>::JudyArray( const std::size_t max_key_leng
 {
     clear_key_buffer();
     assert( max_key_length > 0 && "You must put a max_key_length greater than 0!" );
-    _judy_array = judy_open( max_key_length, 1 );
+    _judy_array = judy_open( max_key_length, 0 );
 }
 
 template <class Key, class T, class Compare, class Allocator>
@@ -59,28 +59,30 @@ bool JudyArray<Key, T, Compare, Allocator>::operator==(const This& other) const
     {
         return false;
     }
-    
+
     if ( other._max_key_length != _max_key_length )
     {
         return false;
     }
 
     bool equals = true;
-    const JudySlot *slotOther = judy_strt( other._judy_array, other._buffer.get(), 0 );
-    const JudySlot *slotThis = judy_strt( _judy_array, _buffer.get(), 0 );
+    JudySlot *slot_other = judy_strt( other._judy_array, other._buffer.get(), 0 );
+    JudySlot *slot_this = judy_strt( _judy_array, _buffer.get(), 0 );
 
-    while( equals && slotOther != nullptr && slotThis != nullptr )
+    while( equals && slot_other != nullptr && slot_this != nullptr )
     {
         // Get keys
+        const collisions_set_t *sslot_other = reinterpret_cast<const collisions_set_t *>( *slot_other );
+        const collisions_set_t *sslot_this = reinterpret_cast<const collisions_set_t *>( *slot_this );
         other.clear_key_buffer();
         clear_key_buffer();
         judy_key( other._judy_array, other._buffer.get(), other._max_key_length );
         judy_key( _judy_array, _buffer.get(), _max_key_length );
         equals = ( std::memcmp( _buffer.get(), other._buffer.get(), _max_key_length ) == 0 
-                    && *slotOther == *slotThis );
+                   && sslot_other->size() == sslot_this->size() && *sslot_other == *sslot_this );
         // Next step
-        slotOther = judy_nxt( other._judy_array );
-        slotThis = judy_nxt( _judy_array );
+        slot_other = judy_nxt( other._judy_array );
+        slot_this = judy_nxt( _judy_array );
     }
 
     return equals;
@@ -96,12 +98,15 @@ template <class Key, class T, class Compare, class Allocator>
 void JudyArray<Key, T, Compare, Allocator>::clear()
 {
     clear_key_buffer();
-    const JudySlot *slot = judy_strt( _judy_array, _buffer.get(), 0 );
+    JudySlot *slot = judy_strt( _judy_array, _buffer.get(), 0 );
     bool items_left = (slot != nullptr);
     while( items_left )
     {
+        collisions_set_t *sslot = reinterpret_cast<collisions_set_t *>( *slot );
+        sslot->clear();
         judy_del( _judy_array );
         clear_key_buffer();
+        delete sslot;
         slot = judy_strt( _judy_array, _buffer.get(), 0 );
         items_left = (slot != nullptr);
     }
@@ -117,12 +122,11 @@ bool JudyArray<Key, T, Compare, Allocator>::empty() const
 template <class Key, class T, class Compare, class Allocator>
 typename JudyArray<Key, T, Compare, Allocator>::iterator JudyArray<Key, T, Compare, Allocator>::find( const key_type& key )
 {
-    unsigned char *slot = reinterpret_cast<unsigned char *>( judy_slot( _judy_array, value_pointer( key ), value_length( key ) ) );
+    JudySlot *slot = judy_slot( _judy_array, value_pointer( key ), value_length( key ) );
     if( slot )
     {
-        T val;
-        value_from_pointer( val, slot, false );
-        return iterator( *this, key, val );
+        collisions_set_t * sslot = reinterpret_cast<collisions_set_t *>( *slot );
+        return iterator( *this, key, slot, sslot->begin() );
     }
     else
     {
@@ -134,63 +138,38 @@ template <class Key, class T, class Compare, class Allocator>
 typename JudyArray<Key, T, Compare, Allocator>::size_type JudyArray<Key, T, Compare, Allocator>::count(const key_type& key) const
 {
     const std::size_t klen = value_length( key );
-    const unsigned char *slot = reinterpret_cast<const unsigned char *>( judy_slot( _judy_array, value_pointer( key ), klen ) );
+    const JudySlot *slot = judy_slot( _judy_array, value_pointer( key ), klen );
     if ( slot == nullptr )
     { return 0; }
 
-    bool items_left = true;
-    Key current_key;
-
-    std::size_t cnt = 0;
-    while( items_left )
-    {
-        clear_key_buffer();
-        judy_key( _judy_array, _buffer.get(), _max_key_length );
-        value_from_pointer( current_key, _buffer.get(), true );
-        if ( current_key != key )
-        {
-            items_left = false;
-        }
-        else
-        {
-            ++cnt;
-            slot = reinterpret_cast<const unsigned char *>( judy_nxt( _judy_array ) );
-            items_left = (slot != nullptr);
-        }
-    }
-    
-    return cnt;
+    return ( reinterpret_cast<const collisions_set_t *>( *slot )->size() );
 }
 
 template <class Key, class T, class Compare, class Allocator>
 typename JudyArray<Key, T, Compare, Allocator>::iterator JudyArray<Key, T, Compare, Allocator>::lower_bound( const key_type& key )
 {
     const std::size_t klen = value_length( key );
-    const T *slot = reinterpret_cast<const unsigned char *>( judy_strt( _judy_array, value_pointer( key ), klen ) );
+    JudySlot *slot = judy_strt( _judy_array, value_pointer( key ), klen );
     Key nearest_key;
-    T nearest_value;
     // Get the key of the first item found
     clear_key_buffer();
     judy_key( _judy_array, _buffer.get(), _max_key_length );
     value_from_pointer( nearest_key, _buffer.get(), false );
-    value_from_pointer( nearest_value, slot, false );
-    return iterator( *this, nearest_key, nearest_value );
+    return iterator( *this, nearest_key, slot );
 }
 
 template <class Key, class T, class Compare, class Allocator>
 typename JudyArray<Key, T, Compare, Allocator>::iterator JudyArray<Key, T, Compare, Allocator>::upper_bound(const key_type& key)
 {
     const std::size_t klen = value_length( key );
-    const unsigned char *slot = reinterpret_cast<const unsigned char *>( judy_strt( _judy_array, value_pointer( key ), klen ) );
+    JudySlot *slot = judy_strt( _judy_array, value_pointer( key ), klen );
     if ( !slot )
     { return end(); }
 
     bool items_left = true;
     Key current_key;
-    T current_value;
 
-    value_from_pointer( current_value, slot, true );
-    iterator it( _judy_array, key, current_value );
+    iterator it( _judy_array, key, slot );
 
     while( items_left )
     {
@@ -217,25 +196,12 @@ typename JudyArray<Key, T, Compare, Allocator>::const_iterator_pair JudyArray<Ke
 {
     const std::size_t klen = value_length( key );
     // judy_slot is supposed to do the work of equal_range
-    const unsigned char *slot = reinterpret_cast<const unsigned char *>( judy_slot( _judy_array, value_pointer( key ), klen ) );
+    JudySlot *slot = reinterpret_cast<JudySlot *>( judy_slot( _judy_array, value_pointer( key ), klen ) );
     if ( !slot )
-    {
-        return const_iterator_pair( end(), end() );
-    }
+    { return const_iterator_pair( end(), end() ); }
 
-    T current_value;
-    value_from_pointer( current_value, slot, false );
-
-    const_iterator it_begin( _judy_array, key, current_value );
-    const_iterator it = it_begin;
-    const_iterator it_last = it_begin;
-    while( it != end() )
-    {
-        it_last = it;
-        ++it;
-    }
-
-    return const_iterator_pair( it_begin, it_last );
+    collisions_set_t * sslot = reinterpret_cast<collisions_set_t *>( *slot );
+    return const_iterator_pair( const_iterator( _judy_array, key, slot ), const_iterator( _judy_array, key, slot, sslot->end() ) );
 }
 
 template <class Key, class T, class Compare, class Allocator>
@@ -269,30 +235,40 @@ std::pair<typename JudyArray<Key, T, Compare, Allocator>::iterator, bool> JudyAr
     const std::size_t klen = value_length( key_value.first );
     assert( klen <= _max_key_length && "The key length musn't be greater than the maximum length of the judy array's key!" );
     const unsigned char* kptr = value_pointer( key_value.first );
-
-    // Disallow duplicate keys
+    
+    // Check if there already is an item at given key
     {
-        iterator itExisting = find( key_value.first );
-        if ( itExisting != end() )
+        JudySlot *slot = judy_slot( _judy_array, kptr, klen );
+        // If so, append an item in the collision collection
+        if( slot )
         {
-            std::cerr << "Item already exists!" << std::endl;
-            return std::make_pair( itExisting, false );
+            collisions_set_t * sslot = reinterpret_cast<collisions_set_t *>( *slot );
+            sslot->push_back( key_value.second );
+            typename collisions_set_t::iterator it = std::prev( sslot->end() );
+            return std::make_pair( iterator( *this, key_value.first, slot, it ), true );
         }
     }
 
     // Insert new item
-    unsigned char *slot = reinterpret_cast<unsigned char *>( judy_cell( _judy_array, kptr, klen ) );
-    if( slot )
     {
-        memcpy( slot, value_pointer( key_value.second ), value_length( key_value.second ) );
-        ++_num_items;
-        T current_value;
-        value_from_pointer( current_value, slot, false );
-        return std::make_pair( iterator( *this, key_value.first, current_value ), true );
-    }
-    else
-    {
-        return std::make_pair( end(), false );
+        JudySlot *slot = judy_cell( _judy_array, kptr, klen );
+        if ( !slot )
+        { throw( std::bad_alloc() ); }
+
+        // This the only doubtful way to store a pointer in a judy array
+        (*slot) = reinterpret_cast<JudySlot>( new collisions_set_t() );
+        collisions_set_t *sslot = reinterpret_cast<collisions_set_t *>( *slot );
+        if( sslot )
+        {
+            ++_num_items;
+            sslot->push_back( key_value.second );
+            typename collisions_set_t::iterator it = std::prev( sslot->end() );
+            return std::make_pair( iterator( *this, key_value.first, slot, it ), true );
+        }
+        else
+        {
+            return std::make_pair( end(), false );
+        }
     }
 }
 
@@ -302,8 +278,11 @@ typename JudyArray<Key, T, Compare, Allocator>::iterator JudyArray<Key, T, Compa
     const Key & key = it->first;
     const std::size_t klen = value_length( key );
     // target the right cell
-    if ( judy_slot( _judy_array, value_pointer( key ), klen ) )
+    JudySlot *slot = judy_slot( _judy_array, value_pointer( key ), klen );
+    if ( slot != nullptr )
     {
+        const collisions_set_t *sslot = reinterpret_cast<const collisions_set_t *>( *slot );
+        delete sslot;
         judy_del( _judy_array );
         --_num_items;
     }
@@ -318,9 +297,11 @@ typename JudyArray<Key, T, Compare, Allocator>::iterator JudyArray<Key, T, Compa
     {
         const Key & key = it->first;
         const std::size_t klen = value_length( key );
-        const JudySlot *slot = reinterpret_cast<const JudySlot *>( judy_slot( _judy_array, value_pointer( key ), klen ) );
+        JudySlot *slot = judy_slot( _judy_array, value_pointer( key ), klen );
         if ( slot )
         {
+            const collisions_set_t *sslot = reinterpret_cast<const collisions_set_t *>( *slot );
+            delete sslot;
             judy_del( _judy_array );
             --_num_items;
         }

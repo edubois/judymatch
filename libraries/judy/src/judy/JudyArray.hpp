@@ -38,6 +38,7 @@ class JudyArray
 private:
     typedef JudyArray<Key, T, Compare, Allocator> This;
 public:
+    typedef std::vector<T> collisions_set_t;
     typedef Key key_type;
     typedef T mapped_type;
     typedef typename JudyArrayIterator<This, Key, T>::value_type value_type;
@@ -56,7 +57,6 @@ public:
     typedef typename std::allocator_traits<Allocator>::const_pointer const_pointer;
     typedef std::reverse_iterator<iterator> reverse_iterator;
     typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
-    typedef std::vector<T, Allocator> collisions_set_t;
 
     friend class JudyArrayIterator<This, Key, T>;
 public:
@@ -94,22 +94,22 @@ public:
     bool operator!=(const This&) const;
 
     inline iterator begin()
-    { return iterator( *this ); }
+    { return iterator( *this, false ); }
 
     inline const_iterator begin() const
-    { return const_iterator( *this ); }
+    { return const_iterator( *this, false ); }
 
     inline const_iterator cbegin() const
-    { return const_iterator( *this ); }
+    { return const_iterator( *this, false ); }
 
     inline iterator end()
-    { return iterator(); }
+    { return iterator( *this, true ); }
 
     inline const_iterator end() const
-    { return const_iterator(); }
+    { return const_iterator( *this, true ); }
 
     inline const_iterator cend() const
-    { return const_iterator(); }
+    { return const_iterator( *this, true ); }
 
     inline size_type size() const
     { return _num_items; }

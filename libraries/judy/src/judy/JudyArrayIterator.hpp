@@ -14,7 +14,7 @@ class JudyArrayIterator
 {
 private:
     typedef JudyArrayIterator<J, K, V> This;
-
+    typedef typename J::collisions_set_t collisions_set_t;
 public:
     typedef std::pair<K, V> value_type;
     typedef value_type& reference;
@@ -22,24 +22,28 @@ public:
 public:
     JudyArrayIterator();
     JudyArrayIterator( const This & other );
-    JudyArrayIterator( J & judy_array );
-    JudyArrayIterator( J & judy_array, const K & key, const V & value );
+    JudyArrayIterator( J & judy_array, const bool at_end );
+    JudyArrayIterator( J & judy_array, const K & key, JudySlot * slot );
+    JudyArrayIterator( J & judy_array, const K & key, JudySlot * slot, const typename collisions_set_t::iterator & it_items_current );
     virtual ~JudyArrayIterator();
 
+    This & operator=( const This & other );
     bool operator==( const This & other ) const;
     bool operator!=( const This & other ) const;
 
-    inline const value_type & operator*() const
-    { return _key_value; }
+    inline const value_type operator*() const
+    { return value_type( *_key, *_it_items_current ); }
 
-    inline value_type & operator*()
-    { return _key_value; }
+    inline value_type operator*()
+    { return value_type( *_key, *_it_items_current ); }
 
     value_type *operator->()
     {
-        if ( _valid )
+        if ( _key )
         {
-            return &( operator*() );
+            static value_type v;
+            v = operator*();
+            return &v;
         }
         else
         {
@@ -51,7 +55,7 @@ public:
     inline This & operator+=( const int n )
     {
         int cpt = 0;
-        while( _valid && cpt++ < n )
+        while( _key && cpt++ < n )
         {
             operator++();
         }
@@ -62,7 +66,7 @@ public:
     inline This & operator-=( const int n )
     {
         int cpt = 0;
-        while( _valid && cpt++ < n )
+        while( _key && cpt++ < n )
         {
             operator--();
         }
@@ -70,12 +74,15 @@ public:
     }
 
 private:
-    void get_current_key( value_type & key_value );
-
+    void get_current_key();
+    bool get_items_at( JudySlot *slot );
 private:
     J * _judy_array;                                ///< Targeted Judy array
-    value_type _key_value;                          ///< Key and value
-    bool _valid;                                    ///< Is the iterator pointing to something
+    std::unique_ptr<K> _key;                        ///< Key
+    bool _at_end;                                   ///< Needed to identify end iterator
+    typename collisions_set_t::iterator _it_items_begin;     ///< Begin iterator associated to a fetched collision set
+    typename collisions_set_t::iterator _it_items_current;   ///< Current iterator associated to a fetched collision set
+    typename collisions_set_t::iterator _it_items_end;       ///< End iterator associated to a fetched collision set
 };
 
 }
