@@ -1,9 +1,9 @@
 Import( 'project', 'libs' )
 
 project.UnitTest(
-    target = project.getDirs([-2,-1]),
+    target = project.getDirs([-1]),
     dirs = ['.'],
-    includes = ['../../'],
+    includes = ['../'],
     libraries = [
         libs.judy,
         libs.judymatch,

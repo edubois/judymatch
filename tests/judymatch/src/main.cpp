@@ -4,7 +4,7 @@
 #include <iostream>
 
 #include <judy/JudyArray.hpp>
-#include <set>
+#include <judymatch/Matcher.hpp>
 
 BOOST_AUTO_TEST_SUITE( judy_match_suite )
 
