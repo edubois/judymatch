@@ -4,7 +4,7 @@
 #include <judymatch/geohash/dct/dct.hpp>
 #include <judy/JudyArray.hpp>
 
-namespace judymatcher
+namespace judymatch
 {
 
 /**

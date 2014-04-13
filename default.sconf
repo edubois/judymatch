@@ -24,7 +24,32 @@ incdir_qt5 = join(extern, 'qt5/5.3/clang_64/include')
 fwkdir_qt5 = '/Users/admin/_DEV/3rdParties/qt5/5.3/clang_64/lib'
 incdir_boost = join(extern,'boost-mac')
 libdir_boost = join(extern,'boost-mac/stage/lib')
+incdir_opencv = [ 
+		  join(extern, 'opencv-mac/modules/core/include/'),
+                  join(extern, 'opencv-mac/modules/calib3d/include/'),
+                  join(extern, 'opencv-mac/modules/contrib/include/'),
+                  join(extern, 'opencv-mac/modules/features2d/include/'),
+                  join(extern, 'opencv-mac/modules/flann/include/'),
+                  join(extern, 'opencv-mac/modules/gpu/include/'),
+                  join(extern, 'opencv-mac/modules/highgui/include/'),
+                  join(extern, 'opencv-mac/modules/imgproc/include/'),
+                  join(extern, 'opencv-mac/modules/legacy/include/'),
+                  join(extern, 'opencv-mac/modules/ml/include/'),
+                  join(extern, 'opencv-mac/modules/nonfree/include/'),
+                  join(extern, 'opencv-mac/modules/objdetect/include/'),
+                  join(extern, 'opencv-mac/modules/photo/include/'),
+                  join(extern, 'opencv-mac/modules/softcascade/include/'),
+                  join(extern, 'opencv-mac/modules/stitching/include/'),
+                  join(extern, 'opencv-mac/modules/superres/include/'),
+                  join(extern, 'opencv-mac/modules/ts/include/'),
+                  join(extern, 'opencv-mac/modules/video/include/'),
+                  join(extern, 'opencv-mac/modules/videostab/include/'),
+                  join(extern, 'opencv-mac/modules/world/include/'),
+                  join(extern, 'opencv-mac/include'),
+                  join(extern, 'opencv-mac/include/opencv'),
+                 ]
+libdir_opencv = join(extern, 'opencv-mac/lib')
 
 compiler="clang"
-CXXFLAGS=['-ftemplate-depth=256', '-stdlib=libstdc++', '-isysroot/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk']
-LINKFLAGS=['-stdlib=libstdc++','-Wl,-syslibroot,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk']
+CXXFLAGS=['-ftemplate-depth=256', '-isysroot/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk']
+LINKFLAGS=['-Wl,-syslibroot,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk']

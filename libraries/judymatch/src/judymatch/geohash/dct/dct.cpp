@@ -10,7 +10,7 @@ namespace signal
 {
 using namespace boost::numeric;
 
-void dct( const ublas::vector<RealT> & vecIn, ublas::vector<RealT> & vecOut )
+void dct( const judymatch::vec_t & vecIn, judymatch::vec_t & vecOut )
 {
     BOOST_ASSERT( vecIn.size() );
     vecOut.resize( vecIn.size() );

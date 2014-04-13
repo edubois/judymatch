@@ -25,7 +25,7 @@
     ::std::endl << JM_INFOS << \
     ::std::endl << "\t" << ::boost::current_exception_diagnostic_information() )
 
-namespace tango {
+namespace judymatch {
 
 /**
  * @brief To add quotes around a string.
@@ -38,7 +38,7 @@ inline std::string quotes( const std::string& s )
 
 namespace exception {
 
-/** @brief Common exception for all tango exceptions */
+/** @brief Common exception for all exceptions */
 struct Common : virtual public ::std::exception
 	, virtual public ::boost::exception {};
 

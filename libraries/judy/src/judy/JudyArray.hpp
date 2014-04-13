@@ -9,6 +9,7 @@
  * @warning THIS IS EXPERIMENTAL, SOME FEATURES ARE NOT WORKING (in certain contexts).
  * The reason is _judy_array is using a self owned state that I can't restore 
  * after doing operations (in particular when using iterators).
+ * My advise would be to use one iterator per time
  */
 #ifndef _JUDY_JUDYARRAY_HPP_
 #define	_JUDY_JUDYARRAY_HPP_

@@ -4,7 +4,7 @@
 namespace judymatch
 {
 
-typedef double RealT;
+typedef double real_t;
 
 }
 

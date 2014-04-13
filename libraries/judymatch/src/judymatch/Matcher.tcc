@@ -1,4 +1,4 @@
-namespace judymatcher
+namespace judymatch
 {
 
 template<class DataT>

@@ -3,8 +3,8 @@ Import( 'libs' )
 
 
 judyMatchFlags = { 'LIBPATH': [project.inOutputLib()],
-                'CCFLAGS': [project.CC['bigobj'],project.CC['warning3'],project.CC['multithreadedlib'],project.CC['sharedobject']],
-                'CXXFLAGS':[project.CC['wchar']],
+                'CCFLAGS': [project.CC['bigobj'],project.CC['warning3'],project.CC['multithreadedlib'],project.CC['sharedobject'] ],
+                'CXXFLAGS':[project.CC['wchar'], '-std=c++11', '-stdlib=libc++'],
                 'CPPDEFINES':[],
              }
 
@@ -23,9 +23,10 @@ project.commonLibs.append( judyMatch )
 
 
 SConscript( [
-              'libraries/judyMatch/SConscript',
+              'libraries/judy/SConscript',
+              'libraries/judymatch/SConscript',
             ]
             +
-            project.scanFiles( ['applications/example1'], accept=['SConscript'] )
+            project.scanFiles( ['applications', 'tests'], accept=['SConscript'] )
           )
 
