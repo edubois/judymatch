@@ -1,0 +1,9 @@
+Import( 'project' )
+Import( 'libs' )
+
+project.StaticLibrary( 'judy',
+                       sources   = project.scanFiles( ['src'] ),
+                       includes  = ['src'],
+                       shared = False
+                      )
+
