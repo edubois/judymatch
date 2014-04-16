@@ -23,8 +23,8 @@ public:
     JudyArrayIterator();
     JudyArrayIterator( const This & other );
     JudyArrayIterator( J & judy_array, const bool at_end );
-    JudyArrayIterator( J & judy_array, const K & key, JudySlot * slot );
-    JudyArrayIterator( J & judy_array, const K & key, JudySlot * slot, const typename collisions_set_t::iterator & it_items_current );
+    JudyArrayIterator( J & judy_array, const K & key, collisions_set_t ** slot );
+    JudyArrayIterator( J & judy_array, const K & key, collisions_set_t ** slot, const typename collisions_set_t::iterator & it_items_current );
     virtual ~JudyArrayIterator();
 
     This & operator=( const This & other );
@@ -75,7 +75,7 @@ public:
 
 private:
     void get_current_key();
-    bool get_items_at( JudySlot *slot );
+    bool get_items_at( collisions_set_t ** slot );
 private:
     J * _judy_array;                                ///< Targeted Judy array
     std::unique_ptr<K> _key;                        ///< Key

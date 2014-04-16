@@ -25,7 +25,7 @@ JudyArrayIterator<J, K, V>::JudyArrayIterator( J & judy_array, const bool at_end
     if ( at_end == false )
     {
         // Get the first element of the judy array, if existing
-        if ( get_items_at( judy_strt( _judy_array->_judy_array, _judy_array->_buffer.get(), 0 ) ) )
+        if ( get_items_at( reinterpret_cast<collisions_set_t **>( judy_strt( _judy_array->_judy_array, _judy_array->_buffer.get(), 0 ) ) ) )
         {
             get_current_key();
         }
@@ -33,7 +33,7 @@ JudyArrayIterator<J, K, V>::JudyArrayIterator( J & judy_array, const bool at_end
 }
 
 template<class J, class K, class V>
-JudyArrayIterator<J, K, V>::JudyArrayIterator( J & judy_array, const K & key, JudySlot * slot, const typename collisions_set_t::iterator & it_items_current )
+JudyArrayIterator<J, K, V>::JudyArrayIterator( J & judy_array, const K & key, collisions_set_t ** slot, const typename collisions_set_t::iterator & it_items_current )
 : _judy_array( &judy_array )
 , _at_end( false )
 {
@@ -45,8 +45,9 @@ JudyArrayIterator<J, K, V>::JudyArrayIterator( J & judy_array, const K & key, Ju
 }
 
 template<class J, class K, class V>
-JudyArrayIterator<J, K, V>::JudyArrayIterator( J & judy_array, const K & key, JudySlot * slot )
+JudyArrayIterator<J, K, V>::JudyArrayIterator( J & judy_array, const K & key, collisions_set_t ** slot )
 : _judy_array( &judy_array )
+, _at_end( false )
 {
     if ( get_items_at( slot ) )
     {
@@ -93,7 +94,7 @@ bool JudyArrayIterator<J, K, V>::operator==( const This & other ) const
         return _key == other._key;
     }
 
-    return ( *_key == *other._key ) && ( *_it_items_current == *other._it_items_current );
+    return ( equals( *_key, *other._key ) && ( equals( *_it_items_current, *other._it_items_current ) ) );
 }
 
 template<class J, class K, class V>
@@ -124,7 +125,7 @@ typename JudyArrayIterator<J, K, V>::This &JudyArrayIterator<J, K, V>::operator+
         }
     }
 
-    if ( get_items_at( judy_nxt( _judy_array->_judy_array ) ) )
+    if ( get_items_at( reinterpret_cast<collisions_set_t **>( judy_nxt( _judy_array->_judy_array ) ) ) )
     {
         get_current_key();
     }
@@ -148,7 +149,7 @@ typename JudyArrayIterator<J, K, V>::This &JudyArrayIterator<J, K, V>::operator-
     if ( _at_end )
     {
         // Get the first element of the judy array, if existing
-        if ( get_items_at( judy_end( _judy_array->_judy_array ) ) )
+        if ( get_items_at( reinterpret_cast<collisions_set_t **>( judy_end( _judy_array->_judy_array ) ) ) )
         {
             get_current_key();
             _it_items_current = std::prev( _it_items_end );
@@ -163,7 +164,7 @@ typename JudyArrayIterator<J, K, V>::This &JudyArrayIterator<J, K, V>::operator-
         return *this;
     }
 
-    if ( get_items_at( judy_prv( _judy_array->_judy_array ) ) )
+    if ( get_items_at( reinterpret_cast<collisions_set_t **>( judy_prv( _judy_array->_judy_array ) ) ) )
     {
         get_current_key();
         _it_items_current = std::prev( _it_items_end );
@@ -177,12 +178,12 @@ typename JudyArrayIterator<J, K, V>::This &JudyArrayIterator<J, K, V>::operator-
 }
 
 template<class J, class K, class V>
-bool JudyArrayIterator<J, K, V>::get_items_at( JudySlot *slot )
+bool JudyArrayIterator<J, K, V>::get_items_at( collisions_set_t **slot )
 {
     if ( !slot )
     { return false; }
 
-    collisions_set_t *sslot = reinterpret_cast<collisions_set_t *>( *slot );
+    collisions_set_t *sslot = *slot;
     if ( sslot )
     {
         _it_items_begin = sslot->begin();

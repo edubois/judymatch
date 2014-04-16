@@ -13,8 +13,10 @@ JudyArray<Key, T, Compare, Allocator>::JudyArray( const std::size_t max_key_leng
 , _buffer( new unsigned char[ _max_key_length ] )
 {
     clear_key_buffer();
+    assert( max_key_length == JUDY_key_size );
+    assert( sizeof(this) == sizeof(JudySlot) && "Judy array won't work fine as JudySlot hasn't the size of a pointer!" );
     assert( max_key_length > 0 && "You must put a max_key_length greater than 0!" );
-    _judy_array = judy_open( max_key_length, 0 );
+    _judy_array = judy_open( max_key_length, 1 );
 }
 
 template <class Key, class T, class Compare, class Allocator>
@@ -149,8 +151,15 @@ template <class Key, class T, class Compare, class Allocator>
 typename JudyArray<Key, T, Compare, Allocator>::iterator JudyArray<Key, T, Compare, Allocator>::lower_bound( const key_type& key )
 {
     const std::size_t klen = value_length( key );
-    JudySlot *slot = judy_strt( _judy_array, value_pointer( key ), klen );
+    collisions_set_t ** slot = reinterpret_cast<collisions_set_t **>( judy_strt( _judy_array, value_pointer( key ), klen ) );
+    if ( !slot )
+    {
+        iterator it = end();
+        return --it;
+    }
+
     Key nearest_key;
+    resize_value( nearest_key, _max_key_length );
     // Get the key of the first item found
     clear_key_buffer();
     judy_key( _judy_array, _buffer.get(), _max_key_length );
@@ -168,6 +177,7 @@ typename JudyArray<Key, T, Compare, Allocator>::iterator JudyArray<Key, T, Compa
 
     bool items_left = true;
     Key current_key;
+    resize_value( current_key, _max_key_length );
 
     iterator it( _judy_array, key, slot );
 
@@ -217,7 +227,6 @@ T& JudyArray<Key, T, Compare, Allocator>::operator[]( const key_type& key )
         std::pair<iterator, bool> it_success = insert( value_type( key, T() ) );
         if ( it_success.second )
         {
-            ++_num_items;
             return it_success.first->second;
         }
         else
@@ -236,40 +245,23 @@ std::pair<typename JudyArray<Key, T, Compare, Allocator>::iterator, bool> JudyAr
     assert( klen <= _max_key_length && "The key length musn't be greater than the maximum length of the judy array's key!" );
     const unsigned char* kptr = value_pointer( key_value.first );
     
-    // Check if there already is an item at given key
-    {
-        JudySlot *slot = judy_slot( _judy_array, kptr, klen );
-        // If so, append an item in the collision collection
-        if( slot )
-        {
-            collisions_set_t * sslot = reinterpret_cast<collisions_set_t *>( *slot );
-            sslot->push_back( key_value.second );
-            typename collisions_set_t::iterator it = std::prev( sslot->end() );
-            return std::make_pair( iterator( *this, key_value.first, slot, it ), true );
-        }
-    }
-
     // Insert new item
-    {
-        JudySlot *slot = judy_cell( _judy_array, kptr, klen );
-        if ( !slot )
-        { throw( std::bad_alloc() ); }
+    collisions_set_t **slot = reinterpret_cast<collisions_set_t **>( judy_cell( _judy_array, kptr, klen ) );
+    if ( !slot )
+    { throw( std::bad_alloc() ); }
 
-        // This the only doubtful way to store a pointer in a judy array
-        (*slot) = reinterpret_cast<JudySlot>( new collisions_set_t() );
-        collisions_set_t *sslot = reinterpret_cast<collisions_set_t *>( *slot );
-        if( sslot )
-        {
-            ++_num_items;
-            sslot->push_back( key_value.second );
-            typename collisions_set_t::iterator it = std::prev( sslot->end() );
-            return std::make_pair( iterator( *this, key_value.first, slot, it ), true );
-        }
-        else
-        {
-            return std::make_pair( end(), false );
-        }
+    // This the only doubtful way to store a pointer in a judy array
+    if ( *slot == nullptr )
+    {
+        *slot = new collisions_set_t();
+        if ( *slot == nullptr )
+        { throw( std::bad_alloc() ); }
     }
+
+    ++_num_items;
+    (*slot)->push_back( key_value.second );
+    typename collisions_set_t::iterator it = std::prev( (*slot)->end() );
+    return std::make_pair( iterator( *this, key_value.first, slot, it ), true );
 }
 
 template <class Key, class T, class Compare, class Allocator>
