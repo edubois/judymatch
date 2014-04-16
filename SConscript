@@ -4,7 +4,8 @@ Import( 'libs' )
 
 judyMatchFlags = { 'LIBPATH': [project.inOutputLib()],
                 'CCFLAGS': [project.CC['bigobj'],project.CC['warning3'],project.CC['multithreadedlib'],project.CC['sharedobject'] ],
-                'CXXFLAGS':[project.CC['wchar'], '-std=c++11', '-stdlib=libc++'],
+                'CXXFLAGS':[project.CC['wchar'], 
+                           ],
                 'CPPDEFINES':[],
              }
 
@@ -23,6 +24,7 @@ project.commonLibs.append( judyMatch )
 
 
 SConscript( [
+              'libraries/kissfft/SConscript',
               'libraries/judy/SConscript',
               'libraries/judymatch/SConscript',
             ]

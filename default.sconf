@@ -50,6 +50,9 @@ incdir_opencv = [
                  ]
 libdir_opencv = join(extern, 'opencv-mac/lib')
 
+incdir_kissfft = join(extern, 'kiss_fft130')
+libdir_kissfft = join(extern, 'kiss_fft130')
+
 compiler="clang"
-CXXFLAGS=['-ftemplate-depth=256', '-isysroot/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk']
+CXXFLAGS=['-Wc++11-extensions','-ftemplate-depth=256', '-isysroot/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk']
 LINKFLAGS=['-Wl,-syslibroot,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk']
