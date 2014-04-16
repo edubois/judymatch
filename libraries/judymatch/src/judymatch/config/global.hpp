@@ -10,6 +10,8 @@
 #include "version.hpp"
 
 #include <judymatch/core/exceptions.hpp>
+#include <judymatch/core/judy_vector_ext.hpp>
+#include <judymatch/config/config.hpp>
 
 ////////////////////////////////////////////////////////////////////////////////
 // Assert needs to be everywhere

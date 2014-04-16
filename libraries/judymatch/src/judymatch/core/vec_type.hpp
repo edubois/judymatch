@@ -9,7 +9,7 @@
 namespace judymatch
 {
 
-    typedef boost::numeric::ublas::vector<RealT> vec_t;
+    typedef boost::numeric::ublas::vector<real_t> vec_t;
 
 }
 

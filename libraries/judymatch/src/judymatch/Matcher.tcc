@@ -1,16 +1,16 @@
 namespace judymatch
 {
 
-template<class DataT>
-Matcher<DataT>::Matcher()
+template<class T, class H>
+Matcher<T, H>::Matcher( const H & geohasher )
+: _database( geohasher.hash_size() )
+, _geohasher( geohasher )
 {
-    
 }
 
-template<class DataT>
-Matcher<DataT>::~Matcher()
+template<class T, class H>
+Matcher<T, H>::~Matcher()
 {
-    
 }
 
 }
