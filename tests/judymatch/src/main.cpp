@@ -3,20 +3,209 @@
 #include <unittest.hpp>
 #include <iostream>
 
-#include <judy/JudyArray.hpp>
+#include <judymatch/config/global.hpp>
 #include <judymatch/Matcher.hpp>
+#include <judymatch/geometry/distance.hpp>
+
+#include <boost/random.hpp>
+#include <boost/foreach.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 BOOST_AUTO_TEST_SUITE( judy_match_suite )
 
 using namespace boost::unit_test;
 
-BOOST_AUTO_TEST_CASE( find_closest_existing_function )
-{
-    std::cout << "Testing find closest existing element function on judy array<vec_t, vec_t>" << std::endl;
-    using namespace judy;
+// 16M data
+static const std::size_t k_database_length( /*1024 */ 1024 * 16 );
+static const std::size_t k_data_length( 2 );
+static const double kNoiseSigmaDatabase = 2.0;
+static const double kNoiseSigmaIncomingVec = 1.0;
 
-    typedef JudyArray<std::size_t, std::size_t> JudyArrayT;
-    JudyArrayT judy_array( sizeof( std::size_t ) );
+inline void fill_sequence_vector( const double num_seq, judymatch::vec_t & vec_out )
+{
+    for( std::size_t k = 0; k < vec_out.size(); ++k )
+    {
+        vec_out[ k ] = num_seq;
+    }
+}
+
+inline void fill_random_vector( judymatch::vec_t & vec_out )
+{
+    // Random generator number generator
+	static boost::mt19937 seed( time( NULL ) );
+	static boost::uniform_real<> dist( 0.0, 1.0 );
+	static boost::variate_generator<boost::mt19937&, boost::uniform_real<> > rand_gen( seed, dist );
+
+    for( std::size_t k = 0; k < vec_out.size(); ++k )
+    {
+        vec_out[ k ] = rand_gen();
+    }
+}
+
+inline void noise_vector( judymatch::vec_t & vec_out, const double sigma = 1.0, const double mean = 0.0 )
+{
+    // Random generator number generator
+	static boost::mt19937 seed( time( NULL ) );
+	static boost::normal_distribution<judymatch::vec_t::value_type> dist( mean, sigma );
+	static boost::variate_generator<boost::mt19937&, boost::normal_distribution<double> > rand_gen( seed, dist );
+
+    for( std::size_t k = 0; k < vec_out.size(); ++k )
+    {
+        vec_out[ k ] += rand_gen();
+    }
+}
+
+BOOST_AUTO_TEST_CASE( find_closest_0_0_function )
+{
+    JM_COUT( ">>>>> Testing find closest from (0, 0) function on judy array<vec_t, vec_t>" );
+    using namespace judymatch;
+    using namespace judymatch::geohash;
+    typedef Matcher<vec_t, spiroid::spiroid_geohasher> matcher_t;
+
+    matcher_t matcher( spiroid::spiroid_geohasher( k_data_length, 0.00001 ) );
+    std::vector<vec_t> raw_database;
+    raw_database.reserve( k_database_length );
+
+    // Generate a random database
+    {
+        vec_t vec( k_data_length );
+        for( std::size_t i = 0; i < k_database_length; ++i )
+        {
+            fill_random_vector( vec );
+            matcher.insert( vec );
+            raw_database.push_back( vec );
+        }
+    }
+
+    BOOST_CHECK( matcher.size() == k_database_length );
+
+    vec_t vec_to_find( k_data_length );
+    fill_sequence_vector( 0.0, vec_to_find );
+    matcher_t::iterator it_closest;
+    it_closest = matcher.closest( vec_to_find );
+    vec_t should_be_closest = it_closest->second;
+    const double d_should_be_closest = geometry::euclidean_distance( should_be_closest, vec_to_find );
+    double min_dist = std::numeric_limits<double>::max();
+    vec_t raw_closest;
+    {
+        for( const vec_t & vec: raw_database )
+        {
+            const double d = geometry::euclidean_distance( vec, vec_to_find );
+            if ( d < min_dist )
+            {
+                raw_closest = vec;
+                min_dist = d;
+            }
+        }
+    }
+
+    const double d_sol = geometry::euclidean_distance( raw_closest, should_be_closest );
+    if ( d_sol == 0.0 )
+    {
+        JM_COUT( "Test PASSED..." );
+    }
+    else
+    {
+        JM_COUT( "Test FAILED..." );
+    }
+    BOOST_CHECK( d_sol == 0.0 );
+}
+
+
+BOOST_AUTO_TEST_CASE( find_closest_random_function )
+{
+    JM_COUT( ">>>>> Testing find closest random element function on judy array<vec_t, vec_t>" );
+    using namespace judymatch;
+    using namespace judymatch::geohash;
+    typedef Matcher<vec_t, spiroid::spiroid_geohasher> matcher_t;
+
+    matcher_t matcher( spiroid::spiroid_geohasher( k_data_length, 0.00001 ) );
+    std::vector<vec_t> raw_database;
+    raw_database.reserve( k_database_length );
+
+    // Generate a random database
+    {
+        JM_COUT( "Filling database..." );
+        boost::posix_time::ptime tstart( boost::posix_time::microsec_clock::local_time() );
+        vec_t vec( k_data_length );
+        for( std::size_t i = 0; i < k_database_length; ++i )
+        {
+            fill_random_vector( vec );
+            matcher.insert( vec );
+            raw_database.push_back( vec );
+        }
+
+        boost::posix_time::ptime tstop( boost::posix_time::microsec_clock::local_time() );
+        boost::posix_time::time_duration d = tstop - tstart;
+        const double spendTime = d.total_milliseconds();
+        JM_COUT( "Database filling took: " << spendTime << "ms." );
+    }
+
+    BOOST_CHECK( matcher.size() == k_database_length );
+
+    JM_COUT( "Find closest element..." );
+    vec_t vec_to_find( k_data_length );
+    fill_sequence_vector( 0.3, vec_to_find );
+    //noise_vector( vec_to_find, kNoiseSigmaIncomingVec );
+    JM_COUT( "Input vector is: " << vec_to_find );
+    matcher_t::iterator it_closest;
+    {
+        boost::posix_time::ptime tstart( boost::posix_time::microsec_clock::local_time() );
+        it_closest = matcher.closest( vec_to_find );
+
+        boost::posix_time::ptime tstop( boost::posix_time::microsec_clock::local_time() );
+        boost::posix_time::time_duration d = tstop - tstart;
+        const double spendTime = d.total_microseconds();
+        JM_COUT( "Finding closest element with Eloi Du Bois's algorithm took: " << spendTime << "microsec." );
+    }
+    vec_t should_be_closest = it_closest->second;
+    const double d_should_be_closest = geometry::euclidean_distance( should_be_closest, vec_to_find );
+    if ( it_closest != matcher.end() )
+    {
+        JM_COUT( "Closest candidate is: " << should_be_closest );
+    }
+    else
+    {
+        JM_COUT( "Item not found!" );
+    }
+    
+    JM_COUT( "Now checking the results with a bruteforce algorithm..." );
+    double min_dist = std::numeric_limits<double>::max();
+    vec_t raw_closest;
+    {
+        boost::posix_time::ptime tstart( boost::posix_time::microsec_clock::local_time() );
+        for( const vec_t & vec: raw_database )
+        {
+            const double d = geometry::euclidean_distance( vec, vec_to_find );
+            if ( d < min_dist )
+            {
+                raw_closest = vec;
+                min_dist = d;
+            }
+        }
+
+        boost::posix_time::ptime tstop( boost::posix_time::microsec_clock::local_time() );
+        boost::posix_time::time_duration d = tstop - tstart;
+        JM_COUT( "Finding closest element with brute force algorithm took: " << d.total_milliseconds() << "ms (" << d.total_microseconds() << " microsecs.)" );
+    }
+    JM_COUT( "RAW search found: " << raw_closest );
+
+    const double d_sol = geometry::euclidean_distance( raw_closest, should_be_closest );
+    if ( d_sol == 0.0 )
+    {
+        JM_COUT( "Test PASSED..." );
+    }
+    else
+    {
+        JM_COUT( "Test FAILED..." );
+        JM_CERR( "ALGORITHM found another item (might be an approximation)." );
+        JM_COUT( "Distance between raw_closest and should_be_closest: " << d_sol );
+        JM_COUT( "" );
+        JM_COUT( "Distance between should_be_closest and vec_to_find: " << d_should_be_closest );
+        JM_COUT( "Distance between raw_closest and vec_to_find: " 
+                  << geometry::euclidean_distance( raw_closest, vec_to_find ) );
+    }
+    BOOST_CHECK( d_sol == 0.0 );
 }
 
 BOOST_AUTO_TEST_SUITE_END()

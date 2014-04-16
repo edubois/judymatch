@@ -7,6 +7,8 @@ project.UnitTest(
     libraries = [
         libs.judy,
         libs.judymatch,
+        libs.boost,
+        libs.boost_math,
         libs.boost_unit_test_framework,
     ]
 )
