@@ -64,11 +64,11 @@ inline void noise_vector( judymatch::vec_t & vec_out, const double sigma = 1.0, 
 
 BOOST_AUTO_TEST_CASE( find_closest_0_0_function )
 {
-    JM_COUT( ">>>>> Testing find closest from (0, 0) function on judy array<vec_t, vec_t>" );
+    JM_COUT( ">>>>> Testing find neighborhood of (0, 0) <<<<<<" );
     using namespace judymatch;
     typedef Matcher<vec_t, loc_sens_hasher> matcher_t;
 
-    JM_COUT( "Generating a database with size: " << k_database_length << " vectors (" << k_database_length * k_data_length << "Bytes)" );
+    JM_COUT( "Generating a database with size: " << k_database_length << " vectors of dimension " << k_data_length << " (" << k_database_length * k_data_length << "Bytes)" );
 
     matcher_t matcher( ( loc_sens_hasher() ) );
     std::vector<vec_t> raw_database;
@@ -130,13 +130,13 @@ BOOST_AUTO_TEST_CASE( find_closest_0_0_function )
 
 BOOST_AUTO_TEST_CASE( find_closest_random_function )
 {
-    JM_COUT( ">>>>> Testing find closest random element function on judy array<vec_t, vec_t>" );
+    JM_COUT( ">>>>> Testing find neighborhood of a random vector <<<<<" );
     using namespace judymatch;
     typedef Matcher<vec_t, loc_sens_hasher > matcher_t;
 
     matcher_t matcher( ( loc_sens_hasher() ) );
     std::vector<vec_t> raw_database;
-    JM_COUT( "Generating a database with size: " << k_database_length << " vectors (" << k_database_length * k_data_length << "Bytes)" );
+    JM_COUT( "Generating a database with size: " << k_database_length << " vectors of dimension " << k_data_length << " (" << k_database_length * k_data_length << "Bytes)" );
     raw_database.reserve( k_database_length );
 //    matcher.database().reserve( k_database_length );
 
