@@ -13,4 +13,31 @@ namespace judymatch
 
 }
 
+namespace std
+{
+    inline bool operator<( const judymatch::vec_t& v1, const judymatch::vec_t& v2 )
+    {
+        for( std::size_t i = 0; i < v1.size(); ++i )
+        {
+            if ( v1[i] >= v2[i] )
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    inline bool operator>( const judymatch::vec_t& v1, const judymatch::vec_t& v2 )
+    {
+        for( std::size_t i = 0; i < v1.size(); ++i )
+        {
+            if ( v1[i] <= v2[i] )
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+}
+
 #endif

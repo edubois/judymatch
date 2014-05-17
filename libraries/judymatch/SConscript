@@ -5,11 +5,9 @@ project.StaticLibrary( 'judymatch',
                        sources   = project.scanFiles( ['src'] ),
                        includes  = ['src'],
                        libraries = [
-                                     libs.opencv,
                                      libs.boost,
                                      libs.boost_math,
                                      libs.boost_numeric_bindings,
-                                     libs.kissfft,
                                      libs.judy,
                                     ],
                        shared = False

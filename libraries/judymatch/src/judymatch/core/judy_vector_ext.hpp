@@ -41,7 +41,14 @@ inline void value_from_pointer( judymatch::vec_t & value, const unsigned char* p
 
 inline bool equals( const judymatch::vec_t & v1, const judymatch::vec_t & v2 )
 {
-    return memcmp( value_pointer( v1 ), value_pointer( v2 ), value_length( v1 ) ) == 0;
+    if ( value_length( v1 ) != value_length( v2 ) )
+    {
+        return false;
+    }
+    else
+    {
+        return memcmp( value_pointer( v1 ), value_pointer( v2 ), value_length( v1 ) ) == 0;
+    }
 }
 
 inline void resize_value( judymatch::vec_t & v, const std::size_t sz )
