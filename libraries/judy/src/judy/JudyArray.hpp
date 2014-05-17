@@ -1,6 +1,26 @@
-/**
+/*
  * @brief This is a wrapper for judy arrays, done by Eloi du Bois (c) 2014.
- * Please read license of judymatch library for informations about the license.
+ * Please read license of judymatch library for informations about the license (LGPLv3).
+ *
+ * PLEASE PUT MY NAME IN YOUR SPECIAL THANKS IF YOU USE THIS LIB
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 3 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for  more details.
+ *
+ * You should have received a copy of the GNU Lesser General
+ * Public License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+ * Boston, MA 02110-1301 USA
+ */
+
+/**
  * 
  * The main idea is to follow the recommandations of the C++ 11 standard to make
  * a Judy Array data structure that you can manipulate just as a multimap, but with
@@ -10,7 +30,9 @@
  * The reason is _judy_array is using a self owned state that I can't restore 
  * after doing operations (in particular when using iterators).
  * My advise would be to use one iterator per time
+ * In a single word, keep in mind that using ++it invalidate other iterators.
  */
+
 #ifndef _JUDY_JUDYARRAY_HPP_
 #define	_JUDY_JUDYARRAY_HPP_
 
@@ -80,6 +102,14 @@ public:
 
 public:
     // 23.4.4.2, construct/copy/destroy:
+    /**
+     * @brief constructor
+     * @param max_key_length max key length in bytes
+     * @param depth (@see judy array doc for this)
+     * @param comp comparator
+     * @param Allocator allocator
+     */
+    explicit JudyArray( const size_t max_key_length, const std::size_t depth, const Compare& comp = Compare(), const Allocator& = Allocator() );
     /**
      * @brief constructor
      * @param max_key_length max key length in bytes

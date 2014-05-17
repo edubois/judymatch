@@ -5,6 +5,20 @@ namespace judy
 {
 
 template <class Key, class T, class Compare, class Allocator>
+JudyArray<Key, T, Compare, Allocator>::JudyArray( const std::size_t max_key_length, const std::size_t depth, const Compare& comp, const Allocator& allocator )
+: _num_items( 0 )
+, _comp( comp )
+, _allocator( allocator )
+, _max_key_length( max_key_length )
+, _buffer( new unsigned char[ _max_key_length ] )
+{
+    clear_key_buffer();
+    assert( sizeof(this) == sizeof(JudySlot) && "Judy array won't work fine as JudySlot hasn't the size of a pointer!" );
+    assert( max_key_length > 0 && "You must put a max_key_length greater than 0!" );
+    _judy_array = judy_open( max_key_length, depth );
+}
+
+template <class Key, class T, class Compare, class Allocator>
 JudyArray<Key, T, Compare, Allocator>::JudyArray( const std::size_t max_key_length, const Compare& comp, const Allocator& allocator )
 : _num_items( 0 )
 , _comp( comp )
@@ -13,10 +27,16 @@ JudyArray<Key, T, Compare, Allocator>::JudyArray( const std::size_t max_key_leng
 , _buffer( new unsigned char[ _max_key_length ] )
 {
     clear_key_buffer();
-    assert( max_key_length == JUDY_key_size );
     assert( sizeof(this) == sizeof(JudySlot) && "Judy array won't work fine as JudySlot hasn't the size of a pointer!" );
     assert( max_key_length > 0 && "You must put a max_key_length greater than 0!" );
-    _judy_array = judy_open( max_key_length, 1 );
+    if ( max_key_length > JUDY_key_size )
+    {
+        _judy_array = judy_open( max_key_length, 1 );
+    }
+    else
+    {
+        _judy_array = judy_open( max_key_length, 0 );
+    }
 }
 
 template <class Key, class T, class Compare, class Allocator>
@@ -124,7 +144,7 @@ bool JudyArray<Key, T, Compare, Allocator>::empty() const
 template <class Key, class T, class Compare, class Allocator>
 typename JudyArray<Key, T, Compare, Allocator>::iterator JudyArray<Key, T, Compare, Allocator>::find( const key_type& key )
 {
-    JudySlot *slot = judy_slot( _judy_array, value_pointer( key ), value_length( key ) );
+    collisions_set_t **slot = reinterpret_cast<collisions_set_t **>( judy_slot( _judy_array, value_pointer( key ), value_length( key ) ) );
     if( slot )
     {
         collisions_set_t * sslot = reinterpret_cast<collisions_set_t *>( *slot );
