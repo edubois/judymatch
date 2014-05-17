@@ -63,7 +63,7 @@ BOOST_AUTO_TEST_CASE( insert_string_string_function )
     using namespace judy;
 
     typedef JudyArray<std::string, std::string> JudyArrayT;
-    JudyArrayT judy_array( 256 );
+    JudyArrayT judy_array( 256, 0 );
     BOOST_CHECK( judy_array.size() == 0 );
     BOOST_CHECK( judy_array.begin() == judy_array.end() );
 
@@ -76,7 +76,7 @@ BOOST_AUTO_TEST_CASE( insert_string_string_function )
     judy_array.insert( std::make_pair( std::string( "fooo" ), v1 ) );
 
     BOOST_CHECK( judy_array.size() == 2 );
-    BOOST_CHECK( judy_array.count( "fooo" ) == 1 );
+    BOOST_CHECK_EQUAL( judy_array.count( "fooo" ), 1 );
     BOOST_CHECK( judy_array.begin() != judy_array.end() );
     JudyArrayT::iterator it_item;
     it_item = judy_array.find( "fooo" );
@@ -86,7 +86,7 @@ BOOST_AUTO_TEST_CASE( insert_string_string_function )
     std::string v2( "barr" );
     judy_array.insert( std::make_pair( std::string( "barr" ), v2 ) );
     judy_array.insert( std::make_pair( std::string( "barr" ), v1 ) );
-    BOOST_CHECK( judy_array.size() == 3 );
+    BOOST_CHECK( judy_array.size() == 4 );
     BOOST_CHECK( judy_array.count( "barr" ) == 2 );
     it_item = judy_array.find( "barr" );
     BOOST_CHECK( it_item != judy_array.end() );
@@ -109,7 +109,7 @@ BOOST_AUTO_TEST_CASE( reverse_iterator_function )
     using namespace judy;
 
     typedef JudyArray<std::string, std::string> JudyArrayT;
-    JudyArrayT judy_array( 256 );
+    JudyArrayT judy_array( 256, 0 );
     judy_array.insert( std::make_pair( std::string( "aaa" ), std::string( "a1" ) ) );
     judy_array.insert( std::make_pair( std::string( "aaa" ), std::string( "a2" ) ) );
     judy_array.insert( std::make_pair( std::string( "bbb" ), std::string( "b1" ) ) );
@@ -141,7 +141,7 @@ BOOST_AUTO_TEST_CASE( forward_iterator_function )
     using namespace judy;
 
     typedef JudyArray<std::string, std::string> JudyArrayT;
-    JudyArrayT judy_array( 256 );
+    JudyArrayT judy_array( 256, 0 );
     judy_array.insert( std::make_pair( std::string( "aaa" ), std::string( "a1" ) ) );
     judy_array.insert( std::make_pair( std::string( "aaa" ), std::string( "a2" ) ) );
     judy_array.insert( std::make_pair( std::string( "bbb" ), std::string( "b1" ) ) );

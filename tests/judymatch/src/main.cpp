@@ -6,6 +6,7 @@
 #include <judymatch/config/global.hpp>
 #include <judymatch/Matcher.hpp>
 #include <judymatch/geometry/distance.hpp>
+#include <judymatch/lsh/dct/dct.hpp>
 
 #include <boost/random.hpp>
 #include <boost/foreach.hpp>
@@ -15,11 +16,16 @@ BOOST_AUTO_TEST_SUITE( judy_match_suite )
 
 using namespace boost::unit_test;
 
-// 16M data
-static const std::size_t k_database_length( /*1024 */ 1024 * 16 );
-static const std::size_t k_data_length( 2 );
-static const double kNoiseSigmaDatabase = 2.0;
+static const std::size_t k_data_length = 8;
+static const std::size_t k_database_length( 1024 * 1024 * 8 );
+static const std::size_t k_window_search = 8;  ///< Needed because some LSH functions are approximative
+
+static const std::size_t k_threshold_validation = 5.0;          ///< Thershold for accepting results, put 0 for exactness
+
+static const double kNoiseSigmaDatabase = 1.0;
 static const double kNoiseSigmaIncomingVec = 1.0;
+
+typedef judymatch::lsh::dct::dct_1d_lsh<k_data_length> loc_sens_hasher;
 
 inline void fill_sequence_vector( const double num_seq, judymatch::vec_t & vec_out )
 {
@@ -33,12 +39,12 @@ inline void fill_random_vector( judymatch::vec_t & vec_out )
 {
     // Random generator number generator
 	static boost::mt19937 seed( time( NULL ) );
-	static boost::uniform_real<> dist( 0.0, 1.0 );
+	static boost::uniform_real<> dist( 0.0, 256.0 );
 	static boost::variate_generator<boost::mt19937&, boost::uniform_real<> > rand_gen( seed, dist );
 
     for( std::size_t k = 0; k < vec_out.size(); ++k )
     {
-        vec_out[ k ] = rand_gen();
+        vec_out[ k ] = std::abs( rand_gen() );
     }
 }
 
@@ -52,6 +58,7 @@ inline void noise_vector( judymatch::vec_t & vec_out, const double sigma = 1.0, 
     for( std::size_t k = 0; k < vec_out.size(); ++k )
     {
         vec_out[ k ] += rand_gen();
+        vec_out[ k ] = std::abs( vec_out[ k ] );
     }
 }
 
@@ -59,19 +66,22 @@ BOOST_AUTO_TEST_CASE( find_closest_0_0_function )
 {
     JM_COUT( ">>>>> Testing find closest from (0, 0) function on judy array<vec_t, vec_t>" );
     using namespace judymatch;
-    using namespace judymatch::geohash;
-    typedef Matcher<vec_t, spiroid::spiroid_geohasher> matcher_t;
+    typedef Matcher<vec_t, loc_sens_hasher> matcher_t;
 
-    matcher_t matcher( spiroid::spiroid_geohasher( k_data_length, 0.00001 ) );
+    JM_COUT( "Generating a database with size: " << k_database_length << " vectors (" << k_database_length * k_data_length << "Bytes)" );
+
+    matcher_t matcher( ( loc_sens_hasher() ) );
     std::vector<vec_t> raw_database;
     raw_database.reserve( k_database_length );
+//    matcher.database().reserve( k_database_length );
 
     // Generate a random database
     {
         vec_t vec( k_data_length );
         for( std::size_t i = 0; i < k_database_length; ++i )
         {
-            fill_random_vector( vec );
+            fill_sequence_vector( i, vec );
+            noise_vector( vec, kNoiseSigmaDatabase );
             matcher.insert( vec );
             raw_database.push_back( vec );
         }
@@ -82,8 +92,13 @@ BOOST_AUTO_TEST_CASE( find_closest_0_0_function )
     vec_t vec_to_find( k_data_length );
     fill_sequence_vector( 0.0, vec_to_find );
     matcher_t::iterator it_closest;
-    it_closest = matcher.closest( vec_to_find );
+    it_closest = matcher.closest_precise( vec_to_find, k_window_search );
+    if ( it_closest == matcher.begin() )
+    {
+        JM_COUT( "Trivial result: the closest item is the first one in the judy array..." );
+    }
     vec_t should_be_closest = it_closest->second;
+    JM_COUT_VAR( should_be_closest );
     const double d_should_be_closest = geometry::euclidean_distance( should_be_closest, vec_to_find );
     double min_dist = std::numeric_limits<double>::max();
     vec_t raw_closest;
@@ -100,7 +115,8 @@ BOOST_AUTO_TEST_CASE( find_closest_0_0_function )
     }
 
     const double d_sol = geometry::euclidean_distance( raw_closest, should_be_closest );
-    if ( d_sol == 0.0 )
+    std::cout << "Distance to correctness: " << d_sol << std::endl;
+    if ( d_sol <= k_threshold_validation )
     {
         JM_COUT( "Test PASSED..." );
     }
@@ -108,7 +124,7 @@ BOOST_AUTO_TEST_CASE( find_closest_0_0_function )
     {
         JM_COUT( "Test FAILED..." );
     }
-    BOOST_CHECK( d_sol == 0.0 );
+    BOOST_CHECK( d_sol <= k_threshold_validation );
 }
 
 
@@ -116,12 +132,13 @@ BOOST_AUTO_TEST_CASE( find_closest_random_function )
 {
     JM_COUT( ">>>>> Testing find closest random element function on judy array<vec_t, vec_t>" );
     using namespace judymatch;
-    using namespace judymatch::geohash;
-    typedef Matcher<vec_t, spiroid::spiroid_geohasher> matcher_t;
+    typedef Matcher<vec_t, loc_sens_hasher > matcher_t;
 
-    matcher_t matcher( spiroid::spiroid_geohasher( k_data_length, 0.00001 ) );
+    matcher_t matcher( ( loc_sens_hasher() ) );
     std::vector<vec_t> raw_database;
+    JM_COUT( "Generating a database with size: " << k_database_length << " vectors (" << k_database_length * k_data_length << "Bytes)" );
     raw_database.reserve( k_database_length );
+//    matcher.database().reserve( k_database_length );
 
     // Generate a random database
     {
@@ -130,7 +147,8 @@ BOOST_AUTO_TEST_CASE( find_closest_random_function )
         vec_t vec( k_data_length );
         for( std::size_t i = 0; i < k_database_length; ++i )
         {
-            fill_random_vector( vec );
+            fill_sequence_vector( i, vec );
+            noise_vector( vec, kNoiseSigmaDatabase );
             matcher.insert( vec );
             raw_database.push_back( vec );
         }
@@ -145,13 +163,13 @@ BOOST_AUTO_TEST_CASE( find_closest_random_function )
 
     JM_COUT( "Find closest element..." );
     vec_t vec_to_find( k_data_length );
-    fill_sequence_vector( 0.3, vec_to_find );
-    //noise_vector( vec_to_find, kNoiseSigmaIncomingVec );
+    fill_sequence_vector( k_data_length/2, vec_to_find );
+    noise_vector( vec_to_find, kNoiseSigmaIncomingVec );
     JM_COUT( "Input vector is: " << vec_to_find );
     matcher_t::iterator it_closest;
     {
         boost::posix_time::ptime tstart( boost::posix_time::microsec_clock::local_time() );
-        it_closest = matcher.closest( vec_to_find );
+        it_closest = matcher.closest_precise( vec_to_find, k_window_search );
 
         boost::posix_time::ptime tstop( boost::posix_time::microsec_clock::local_time() );
         boost::posix_time::time_duration d = tstop - tstart;
@@ -191,7 +209,7 @@ BOOST_AUTO_TEST_CASE( find_closest_random_function )
     JM_COUT( "RAW search found: " << raw_closest );
 
     const double d_sol = geometry::euclidean_distance( raw_closest, should_be_closest );
-    if ( d_sol == 0.0 )
+    if ( d_sol <= k_threshold_validation )
     {
         JM_COUT( "Test PASSED..." );
     }
@@ -205,7 +223,7 @@ BOOST_AUTO_TEST_CASE( find_closest_random_function )
         JM_COUT( "Distance between raw_closest and vec_to_find: " 
                   << geometry::euclidean_distance( raw_closest, vec_to_find ) );
     }
-    BOOST_CHECK( d_sol == 0.0 );
+    BOOST_CHECK( d_sol <= k_threshold_validation );
 }
 
 BOOST_AUTO_TEST_SUITE_END()
