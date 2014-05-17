@@ -24,7 +24,7 @@ project.commonLibs.append( judyMatch )
 
 
 SConscript( [
-              'libraries/kissfft/SConscript',
+              'libraries/vfwavelib/SConscript',
               'libraries/judy/SConscript',
               'libraries/judymatch/SConscript',
             ]
