@@ -3,12 +3,12 @@ judymatch
 
 Very fast pattern matching algorithm
 
-The final goal of this library is gives a set of tools to help people in finding and testing their Locality Sensitive Hashing functions.
+The final goal of this library is to give a set of tools to help people in finding and testing their Locality Sensitive Hashing functions.
 
-It contains a C++ templated wrapper for judy arrays, meaning you can have AMAZING results in term of speed and high scalability.
+It contains a C++ templated wrapper for judy arrays, meaning you can have AMAZING results in terms of speed and high scalability.
 
 Locality Sensitive Hashing functions can provide a very fast way to find neighbors of a given vector of any dimension in a database.
-I strongly believe it is a lot faster thank quadtree, octree, etc...
+I strongly believe it is a lot faster than quadtree, octree, etc...
 
 To me, finding a perfect (non approximative) LSH function is like a "Saint Graal" of computer science.
 I am working on a perfect LSH function.
