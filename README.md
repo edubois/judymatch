@@ -1,7 +1,7 @@
 judymatch
 =========
 
-Very fast pattern matching algorithm
+Very fast pattern matching framework
 
 The final goal of this library is to give a set of tools to help people in finding and testing their Locality Sensitive Hashing functions.
 
@@ -19,7 +19,7 @@ Don't forget to pull submodules:
 
 git submodule update -i
 
-To test my current solution that uses DCT as a LSH function (not very good, I will write on my blog why very soon):
+To test my current solution that uses DCT as a LSH function (not very good, I will write why on my blog very soon):
 
 Edit you default.sconf, fill with the right libraries and paths, then:
 
