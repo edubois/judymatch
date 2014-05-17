@@ -174,7 +174,7 @@ BOOST_AUTO_TEST_CASE( find_closest_random_function )
         boost::posix_time::ptime tstop( boost::posix_time::microsec_clock::local_time() );
         boost::posix_time::time_duration d = tstop - tstart;
         const double spendTime = d.total_microseconds();
-        JM_COUT( "Finding closest element with Eloi Du Bois's algorithm took: " << spendTime << "microsec." );
+        JM_COUT( "Finding closest element with LSH algorithm took: " << spendTime << "microsec." );
     }
     vec_t should_be_closest = it_closest->second;
     const double d_should_be_closest = geometry::euclidean_distance( should_be_closest, vec_to_find );
