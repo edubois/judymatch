@@ -1,0 +1,11 @@
+Import( 'project' )
+Import( 'libs' )
+
+project.StaticLibrary( 'vfwavelib',
+                       sources   = project.scanFiles( ['src'] ),
+                       includes  = ['src'],
+                       libraries = [
+                                    ],
+                       shared = False
+                      )
+
