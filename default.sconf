@@ -12,6 +12,9 @@ check_libs=0
 
 jobs=8
 
+# Enable this to get amazing performances (use of judy arrays)
+# CPPDEFINES.extend(['USE_JUDY_ARRAY_T']);
+
 extern = '#../3rdParties'
 
 aliases = [('example1')]
@@ -20,11 +23,10 @@ default = 'example1'
 ccache = False
 ccachedir = join(extern,'judyMatchCache')
 
-incdir_qt5 = join(extern, 'qt5/5.3/clang_64/include')
-fwkdir_qt5 = '/Users/admin/_DEV/3rdParties/qt5/5.3/clang_64/lib'
 incdir_boost = join(extern,'boost-mac-c++11')
 libdir_boost = join(extern,'boost-mac-c++11/stage/lib')
 
+# Mac only:
 compiler="clang"
 CXXFLAGS=['-Wno-deprecated-register', '-ftemplate-depth=256', '-std=c++11', '-stdlib=libc++', '-isysroot/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk']
 LINKFLAGS=['-stdlib=libc++','-Wl,-syslibroot,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk']
