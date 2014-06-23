@@ -17,7 +17,7 @@ BOOST_AUTO_TEST_SUITE( judy_match_suite )
 using namespace boost::unit_test;
 
 static const std::size_t k_data_length = 8;
-static const std::size_t k_database_length( 1024 * 1024 * 8 );
+static const std::size_t k_database_length( 1024 * 1024 *8 );
 static const std::size_t k_window_search = 8;  ///< Needed because some LSH functions are approximative
 
 static const std::size_t k_threshold_validation = 5.0;          ///< Thershold for accepting results, put 0 for exactness
@@ -92,7 +92,11 @@ BOOST_AUTO_TEST_CASE( find_closest_0_0_function )
     vec_t vec_to_find( k_data_length );
     fill_sequence_vector( 0.0, vec_to_find );
     matcher_t::iterator it_closest;
+#ifdef USE_JUDY_ARRAY_T
+    it_closest = matcher.closest( vec_to_find );
+#else
     it_closest = matcher.closest_precise( vec_to_find, k_window_search );
+#endif
     if ( it_closest == matcher.begin() )
     {
         JM_COUT( "Trivial result: the closest item is the first one in the judy array..." );
@@ -169,8 +173,11 @@ BOOST_AUTO_TEST_CASE( find_closest_random_function )
     matcher_t::iterator it_closest;
     {
         boost::posix_time::ptime tstart( boost::posix_time::microsec_clock::local_time() );
+#ifdef USE_JUDY_ARRAY_T
+        it_closest = matcher.closest( vec_to_find );
+#else
         it_closest = matcher.closest_precise( vec_to_find, k_window_search );
-
+#endif
         boost::posix_time::ptime tstop( boost::posix_time::microsec_clock::local_time() );
         boost::posix_time::time_duration d = tstop - tstart;
         const double spendTime = d.total_microseconds();
