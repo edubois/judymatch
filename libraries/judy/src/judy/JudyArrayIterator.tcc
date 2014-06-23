@@ -15,6 +15,8 @@ template<class J, class K, class V>
 JudyArrayIterator<J, K, V>::JudyArrayIterator( const This & other )
 {
     operator=( other );
+    // Backup stack
+    backup_state();
 }
 
 template<class J, class K, class V>
@@ -22,6 +24,8 @@ JudyArrayIterator<J, K, V>::JudyArrayIterator( J & judy_array, const bool at_end
 : _judy_array( &judy_array )
 , _at_end( at_end )
 {
+    // Backup stack
+    backup_state();
     if ( at_end == false )
     {
         // Get the first element of the judy array, if existing
@@ -37,6 +41,8 @@ JudyArrayIterator<J, K, V>::JudyArrayIterator( J & judy_array, const K & key, co
 : _judy_array( &judy_array )
 , _at_end( false )
 {
+    // Backup stack
+    backup_state();
     if ( get_items_at( slot ) )
     {
         _key.reset( new K( key ) );
@@ -49,6 +55,8 @@ JudyArrayIterator<J, K, V>::JudyArrayIterator( J & judy_array, const K & key, co
 : _judy_array( &judy_array )
 , _at_end( false )
 {
+    // Backup stack
+    backup_state();
     if ( get_items_at( slot ) )
     {
         _key.reset( new K( key ) );
@@ -68,6 +76,7 @@ typename JudyArrayIterator<J, K, V>::This & JudyArrayIterator<J, K, V>::operator
     _it_items_current = other._it_items_current;
     _it_items_end = other._it_items_end;
     _at_end = other._at_end;
+    _judy_stack = other._judy_stack;
 
     if ( other._key )
     {
@@ -89,14 +98,14 @@ bool JudyArrayIterator<J, K, V>::operator==( const This & other ) const
     if ( _key == nullptr || other._key == nullptr )
     { return false; }
 
-    if ( ( _it_items_current == _it_items_end ) || ( _it_items_current == other._it_items_end ) )
-    {
-        return _key == other._key;
-    }
-
     if ( _it_items_current == other._it_items_current )
     {
         return true;
+    }
+
+    if ( ( _it_items_current == _it_items_end ) || ( _it_items_current == other._it_items_end ) )
+    {
+        return _key == other._key;
     }
 
     return ( equals( *_key, *other._key ) && ( equals( *_it_items_current, *other._it_items_current ) ) );
@@ -116,6 +125,9 @@ typename JudyArrayIterator<J, K, V>::This &JudyArrayIterator<J, K, V>::operator+
         _key.reset();
         return *this;
     }
+
+    // Restore judy array state
+    restore_state();
 
     if ( _key && _it_items_current != _it_items_end )
     {
@@ -151,6 +163,9 @@ typename JudyArrayIterator<J, K, V>::This &JudyArrayIterator<J, K, V>::operator-
         return *this;
     }
     
+    // Restore judy array state
+    restore_state();
+
     if ( _at_end )
     {
         // Get the first element of the judy array, if existing
@@ -185,6 +200,9 @@ typename JudyArrayIterator<J, K, V>::This &JudyArrayIterator<J, K, V>::operator-
 template<class J, class K, class V>
 bool JudyArrayIterator<J, K, V>::get_items_at( collisions_set_t **slot )
 {
+    // Backup stack
+    backup_state();
+
     if ( !slot )
     { return false; }
 
@@ -206,6 +224,24 @@ void JudyArrayIterator<J, K, V>::get_current_key()
     judy_key( _judy_array->_judy_array, _judy_array->_buffer.get(), _judy_array->_max_key_length );
     _key.reset( new K() );
     value_from_pointer( *_key, _judy_array->_buffer.get(), false );
+}
+
+template<class J, class K, class V>
+void JudyArrayIterator<J, K, V>::restore_state()
+{
+    if ( _judy_array && _judy_array->_judy_array->stack )
+    {
+        *_judy_array->_judy_array->stack = _judy_stack;
+    }
+}
+
+template<class J, class K, class V>
+void JudyArrayIterator<J, K, V>::backup_state()
+{
+    if ( _judy_array && _judy_array->_judy_array->stack )
+    {
+        _judy_stack = *_judy_array->_judy_array->stack;
+    }
 }
 
 }
