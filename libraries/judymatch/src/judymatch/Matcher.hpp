@@ -131,12 +131,12 @@ public:
     {
         const typename H::value_type h = _geohasher.hash_for_find_back( vec );
         iterator upper = _database.lower_bound( h );
-        if ( upper == _database.begin() || ( upper != _database.end() && geometry::euclidean_distance(upper->first, h) ) )
+        if ( upper == _database.begin() || ( upper != _database.end() && geometry::euclidean_distance(upper->first, h) == 0.0 ) )
         {
             return upper;
         }
         iterator lower = upper;
-        const double dist_upper = geometry::euclidean_distance(upper->first, h);
+        const double dist_upper = ( upper != _database.end() ) ? geometry::euclidean_distance(upper->first, h) : 0.0;
         --lower;
         if ( upper == _database.end() ||
                 ( geometry::euclidean_distance(h, lower->first) < dist_upper ) )
