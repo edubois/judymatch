@@ -74,10 +74,13 @@ public:
     }
 
 private:
+    void backup_state();
+    void restore_state();
     void get_current_key();
     bool get_items_at( collisions_set_t ** slot );
 private:
     J * _judy_array;                                ///< Targeted Judy array
+    JudyStack _judy_stack;                          ///< Current judy array stack (cursor)
     std::unique_ptr<K> _key;                        ///< Key
     bool _at_end;                                   ///< Needed to identify end iterator
     typename collisions_set_t::iterator _it_items_begin;     ///< Begin iterator associated to a fetched collision set
