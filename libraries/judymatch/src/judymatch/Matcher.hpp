@@ -27,6 +27,7 @@
 
 #include <judy/JudyArray.hpp>
 
+#include <judymatch/config/global.hpp>
 #include <judymatch/geometry/distance.hpp>
 
 #include <map>
@@ -49,8 +50,11 @@ private:
 
 public:
     typedef typename H::value_type hash_value;
+#ifdef USE_JUDY_ARRAY_T
+    typedef judy::JudyArray<hash_value, T> database_t;
+#else
     typedef std::multimap<hash_value, T, std::less<hash_value> > database_t;
-//    typedef judy::JudyArray<hash_value, T> database_t;
+#endif
     typedef typename database_t::iterator iterator;
     typedef typename database_t::reverse_iterator reverse_iterator;
     typedef typename database_t::const_iterator const_iterator;
@@ -127,14 +131,15 @@ public:
     {
         const typename H::value_type h = _geohasher.hash_for_find_back( vec );
         iterator upper = _database.lower_bound( h );
-        if ( upper == _database.begin() || ( upper != _database.end() && geometry::euclidean_distance(upper->first, h) == 0.0 ) )
+        if ( upper == _database.begin() || ( upper != _database.end() && geometry::euclidean_distance(upper->first, h) ) )
         {
             return upper;
         }
         iterator lower = upper;
+        const double dist_upper = geometry::euclidean_distance(upper->first, h);
         --lower;
         if ( upper == _database.end() ||
-                ( geometry::euclidean_distance(h, lower->first) < geometry::euclidean_distance(upper->first, h) ) )
+                ( geometry::euclidean_distance(h, lower->first) < dist_upper ) )
         {
             return lower;
         }
