@@ -10,7 +10,7 @@ It contains a C++ templated wrapper for judy arrays, meaning you can have AMAZIN
 Locality Sensitive Hashing functions can provide a very fast way to find neighbors of a given vector of any dimension in a database.
 I strongly believe it is a lot faster than quadtree, octree, etc...
 
-To me, finding a perfect (non approximative) LSH function is like a "Saint Graal" of computer science.
+To me, finding a perfect (non approximative) LSH function is like a big deal in computer science.
 I am working on a perfect LSH function.
 
 https://github.com/edubois/judymatch
@@ -24,6 +24,8 @@ To test my current solution that uses DCT as a LSH function (not very good, I wi
 Edit you default.sconf, fill with the right libraries and paths, then:
 
 scons mode=release unittest
+
+In default.sconf, you can also enable USE_JUDY_ARRAY_T to enable the use of judy arrays (for amazing performances)
 
 Note: you must have scons to compile.
 sudo apt-get install scons
