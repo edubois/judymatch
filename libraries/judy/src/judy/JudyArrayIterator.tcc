@@ -94,6 +94,11 @@ bool JudyArrayIterator<J, K, V>::operator==( const This & other ) const
         return _key == other._key;
     }
 
+    if ( _it_items_current == other._it_items_current )
+    {
+        return true;
+    }
+
     return ( equals( *_key, *other._key ) && ( equals( *_it_items_current, *other._it_items_current ) ) );
 }
 
