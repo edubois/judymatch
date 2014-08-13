@@ -13,9 +13,9 @@ namespace geometry
 template<class Vec>
 const double euclidean_distance( const Vec & a, const Vec & b )
 {
-    assert( a.size() == b.size() );
     double sum = 0.0;
-    for( std::size_t i = 0; i < a.size(); ++i )
+    const std::size_t imax = std::min( a.size(), b.size() );
+    for( std::size_t i = 0; i < imax; ++i )
     {
         sum += boost::math::pow<2>( a[i] - b[i] );
     }
