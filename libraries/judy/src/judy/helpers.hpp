@@ -41,11 +41,7 @@ void clear_buffer( unsigned char * ptr, const std::size_t len )
 }
 
 template<>
-void clear_buffer<std::string>( unsigned char * ptr, const std::size_t len )
-{
-    assert( len > 0 );
-    ptr[0] = '\0';
-}
+void clear_buffer<std::string>( unsigned char * ptr, const std::size_t len );
 
 /**
  * Length of a key, in bytes, for a vector<T> key
