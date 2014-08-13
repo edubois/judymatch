@@ -1,0 +1,41 @@
+#########################
+# COMPILATION STEPS
+########################
+
+# clone the sources
+git clone https://github.com/edubois/judymatch.git
+cd judymatch
+git submodule update -i
+
+# now, it's time to edit default.sconf according to your configuration.
+# In the default configuration, I made a parent directory 3rdParties where I put my 3rd party libraries.
+# to change your external libraries base dir, edit the variable extern in this file (default.sconf).
+# If you are using MAC, adapt the last lines according to your XCode configuration
+# If you are not using MAC, remove the lines after '# Mac only'
+
+# When you are ready, enter:
+scons unittest
+
+# If unittest are passing, this will show results such as:
+    Running 2 test cases...
+    >>>>> Testing find neighborhood of (0, 0) <<<<<<
+    Generating a database with size: 8388608 vectors of dimension 8 (67108864Bytes)
+    Trivial result: the closest item is the first one in the judy array...
+    should_be_closest: [8](1.4211,0.745833,1.77146,1.24336,1.0749,0.483775,0.344653,1.68697)
+    Distance to correctness: 0
+    Test PASSED...
+    >>>>> Testing find neighborhood of a random vector <<<<<
+    Generating a database with size: 8388608 vectors of dimension 8 (67108864Bytes)
+    Filling database...
+    Database filling took: 15853ms.
+    Find closest element...
+    Input vector is: [8](2.57517,4.4877,5.05744,5.34187,4.43476,3.47943,4.38836,2.853)
+    Finding closest element with LSH algorithm took: 12microsec.
+    Closest candidate is: [8](3.09653,3.93934,4.46442,5.64336,6.92249,4.28158,5.66905,6.03037)
+    Now checking the results with a bruteforce algorithm...
+    Finding closest element with brute force algorithm took: 167ms (167176 microsecs.)
+    RAW search found: [8](3.09653,3.93934,4.46442,5.64336,6.92249,4.28158,5.66905,6.03037)
+    Test PASSED...
+
+
+# Please note that this library has been tested (and works) on android.
