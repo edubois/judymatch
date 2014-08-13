@@ -5,6 +5,7 @@
 #include "helpers.hpp"
 #include <cstddef>
 #include <utility>
+#include <memory>
 
 namespace judy
 {
