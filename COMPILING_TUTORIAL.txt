@@ -2,6 +2,9 @@
 # COMPILATION STEPS
 ########################
 
+# you need to download scons build tool to compile the project.
+# you also need boost library.
+
 # clone the sources
 git clone https://github.com/edubois/judymatch.git
 cd judymatch
