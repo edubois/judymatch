@@ -167,4 +167,27 @@ BOOST_AUTO_TEST_CASE( forward_iterator_function )
     BOOST_CHECK( it == judy_array.end() );
 }
 
+BOOST_AUTO_TEST_CASE( iterator_invalidate_function )
+{
+    std::cout << "Testing iterator invalidation on judy array<std::string, std::string>" << std::endl;
+    using namespace judy;
+
+    typedef JudyArray<std::string, std::string> JudyArrayT;
+    JudyArrayT judy_array( 256, 0 );
+    judy_array.insert( std::make_pair( std::string( "aaa" ), std::string( "a1" ) ) );
+    judy_array.insert( std::make_pair( std::string( "aaa" ), std::string( "a2" ) ) );
+    judy_array.insert( std::make_pair( std::string( "bbb" ), std::string( "b1" ) ) );
+    judy_array.insert( std::make_pair( std::string( "ccc" ), std::string( "c1" ) ) );
+    judy_array.insert( std::make_pair( std::string( "ddd" ), std::string( "d1" ) ) );
+
+    typename JudyArrayT::iterator it = judy_array.begin();
+    BOOST_CHECK( it->first == std::string( "aaa" ) );
+    BOOST_CHECK( it->second == std::string( "a1" ) );
+    ++it;
+    BOOST_CHECK( it->first == std::string( "aaa" ) );
+    BOOST_CHECK( it->second == std::string( "a2" ) );
+    typename JudyArrayT::iterator it_begin = judy_array.begin();
+    BOOST_CHECK( it_begin != it );
+}
+
 BOOST_AUTO_TEST_SUITE_END()
