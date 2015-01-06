@@ -17,7 +17,7 @@ BOOST_AUTO_TEST_SUITE( judy_match_suite )
 using namespace boost::unit_test;
 
 static const std::size_t k_data_length = 8;
-static const std::size_t k_database_length( 1024 * 1024 *8 );
+static const std::size_t k_database_length( 1024 * 1024 * 8 );
 static const std::size_t k_window_search = 8;  ///< Needed because some LSH functions are approximative
 
 static const std::size_t k_threshold_validation = 5.0;          ///< Thershold for accepting results, put 0 for exactness
