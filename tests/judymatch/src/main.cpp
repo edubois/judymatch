@@ -12,6 +12,9 @@
 #include <boost/foreach.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
+//Disabled polar lsh function test as it is a work in progress
+//#include "polar.hpp"
+
 BOOST_AUTO_TEST_SUITE( judy_match_suite )
 
 using namespace boost::unit_test;

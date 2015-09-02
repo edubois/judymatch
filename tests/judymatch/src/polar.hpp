@@ -1,5 +1,3 @@
-#define BOOST_TEST_MODULE judy_match_test
-
 #include <unittest.hpp>
 #include <iostream>
 
@@ -13,7 +11,7 @@
 #include <boost/foreach.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
-BOOST_AUTO_TEST_SUITE( judy_match_suite )
+BOOST_AUTO_TEST_SUITE( judy_match_suite_polar )
 
 using namespace boost::unit_test;
 
