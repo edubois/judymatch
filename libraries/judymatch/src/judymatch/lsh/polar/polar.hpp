@@ -49,7 +49,6 @@ void polar_lsh( const V & vec_in, double & result )
     using namespace boost::math;
     using namespace boost::math::constants;
     BOOST_ASSERT( vec_in.size() );
-    BOOST_ASSERT( vec_out.size() == 2 );
     result = vec_in[0];
     for( std::size_t i = 1; i < vec_in.size(); ++i )
     {
