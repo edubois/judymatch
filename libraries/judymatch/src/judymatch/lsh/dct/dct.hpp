@@ -22,7 +22,7 @@ using namespace boost::numeric;
  * @param vecOut output dct coefficients
  */
 template<class V>
-void dct( const V & vec_in, V & vec_out )
+inline void dct( const V & vec_in, V & vec_out )
 {
     using namespace boost::math;
     using namespace boost::math::constants;
@@ -46,7 +46,7 @@ void dct( const V & vec_in, V & vec_out )
  * @param str_out output dct coefficients shrinked into string chars
  */
 template<class T>
-void dct_string( const T & str_in, T & str_out )
+inline void dct_string( const T & str_in, T & str_out )
 {
     using namespace boost::math;
     using namespace boost::math::constants;
@@ -62,7 +62,7 @@ void dct_string( const T & str_in, T & str_out )
         const char *doubleData = reinterpret_cast<const char*>( &v );
         for( std::size_t k = 0; k < sizeof(double); ++k )
         {
-            str_out += doubleData[i];
+            str_out += doubleData[k];
         }
     }
 }
