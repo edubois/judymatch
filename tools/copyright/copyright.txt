@@ -3,11 +3,3 @@
  * https://github.com/edubois/judymatch/blob/master/LICENSE.txt
  */
 
-#ifndef _JM_TRANSLATION_HPP_
-#define	_JM_TRANSLATION_HPP_
-
-// js translation macro
-#define _tr
-
-#endif
-
