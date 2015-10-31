@@ -7,6 +7,7 @@
 #define	_JM_VEC_TYPE_HPP_
 
 #include <judymatch/config/config.hpp>
+#include <judymatch/config/global.hpp>
 
 #include <boost/numeric/ublas/vector.hpp>
 #include <boost/numeric/ublas/io.hpp>
@@ -24,12 +25,16 @@ namespace std
     {
         for( std::size_t i = 0; i < v1.size(); ++i )
         {
-            if ( v1[i] >= v2[i] )
+            if ( v1[i] < v2[i] )
+            {
+                return true;
+            }
+            else if ( v1[i] > v2[i] )
             {
                 return false;
             }
         }
-        return true;
+        return false;
     }
 
     inline bool operator>( const judymatch::vec_t& v1, const judymatch::vec_t& v2 )
