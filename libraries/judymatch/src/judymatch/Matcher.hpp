@@ -51,18 +51,18 @@ class Matcher
  * typedefs
  */
 private:
-    typedef Matcher<T, H> This;
+    using This = Matcher<T, H>;
 
 public:
-    typedef typename H::value_type hash_value;
+    using hash_value = typename H::value_type;
 #ifdef USE_JUDY_ARRAY_T
-    typedef judy::JudyArray<hash_value, T> database_t;
+    using database_t = judy::JudyArray<hash_value, T>;
 #else
-    typedef std::multimap<hash_value, T, std::less<hash_value> > database_t;
+    using database_t = std::multimap<hash_value, T, std::less<hash_value> >;
 #endif
-    typedef typename database_t::iterator iterator;
-    typedef typename database_t::reverse_iterator reverse_iterator;
-    typedef typename database_t::const_iterator const_iterator;
+    using iterator = typename database_t::iterator;
+    using reverse_iterator = typename database_t::reverse_iterator;
+    using const_iterator = typename database_t::const_iterator;
 
 /**
  * methods
