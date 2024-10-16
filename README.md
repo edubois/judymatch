@@ -49,11 +49,9 @@ Test PASSED...
 
 ## Example of practical applications
 
-* Real time feature tracking
 * Face matching
 * Finger prints matching
 * High frequency trading
-* Soul mate matching
 
 ## Compilation
 
