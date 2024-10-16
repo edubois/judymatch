@@ -3,18 +3,17 @@
 * Very fast pattern matching proof of concept (microsecond scale using petabytes of data)
 
 This repository contains an implementation of what we call 'Locality Sensitive Hashing'.
-Locality Sensitive Hashing functions can provide a very fast way to find neighbors of a given vector of any dimension in a database. I strongly believe it is a lot faster than quadtree, octree, etc... And have the advantage of beeing dimension-independant.
+Locality Sensitive Hashing functions can provide a very fast way to find neighbors of a given vector of any dimension in a database. It is a lot faster than quadtree, octree, etc.
 
-I actually invented this in 2009 when I was working on denoising algorithms. I had no idea that it was known by the R&D world.
-Anyway, the great idea in this project is that I use a judy-array to match vectors.
+I invented this in 2008-2009 when I was working on denoising algorithms - it stayed in my head for a while. At this time, I had no idea it was known as 'Locality Senstive Hashing'.
 
-The whole thing provides very nice results with one limitation: sometimes, as I use an approximation as a LSH function, the matcher gets really wrong. But in most cases, it finds the true best candidate.
+The algorithm provides very nice results with one limitation: sometimes, as I use an approximation as a LSH function, the O(1) matching fails and it takes a little more time to find the actual data.
 
 This project contains a C++ templated wrapper for judy arrays, meaning you can have GREAT results in terms of speed and high scalability.
 
 To me, finding a perfect (non approximative) LSH function is like a big deal in computer science.
 
-To test my current solution that uses DCT as a LSH function (not very good, I will write why on my blog very soon):
+To test my current solution that uses DCT as a LSH function:
 
 ```
 scons mode=release unittest
